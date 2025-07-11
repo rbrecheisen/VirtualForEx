@@ -1,0 +1,9 @@
+# Project tools
+briefcase
+tomli
+tomli_w
+pytest
+
+# Application
+pyside6>=6.9
+rbeesoft>=1.0
