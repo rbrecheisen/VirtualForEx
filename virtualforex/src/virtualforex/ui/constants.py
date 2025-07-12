@@ -1,6 +1,78 @@
-from rbeesoft.ui.constants import Constants as BaseConstants
+from PySide6.QtWidgets import QStyle
+
+from virtualforex.ui.utils import is_macos
 
 
-class Constants(BaseConstants):
+class Constants:
+
+    # MAIN APPLICATION
     VIRTUALFOREX_WINDOW_TITLE = 'Virtual FX Tester'
     VIRTUALFOREX_NAME = 'virtualforex'
+    VIRTUALFOREX_BUNDLE_IDENTIFIER = 'com.rbeesoft'
+    VIRTUALFOREX_WINDOW_W = 1024
+    VIRTUALFOREX_WINDOW_H = 600
+    VIRTUALFOREX_WINDOW_GEOMETRY_KEY = 'window/geometry'
+    VIRTUALFOREX_WINDOW_STATE_KEY = 'window/state'
+    VIRTUALFOREX_STATUS_READY = 'Ready'
+    VIRTUALFOREX_DONATE_URL = 'https://rbeesoft.nl/wordpress/'
+    VIRTUALFOREX_DONATE_BUTTON_TEXT = 'If you wish to support us, please consider a donation by clicking here!'
+    VIRTUALFOREX_DONATE_BUTTON_STYLESHEET = 'background-color: blue; color: white; font-weight: bold;'
+    VIRTUALFOREX_LAST_DIRECTORY_KEY = 'last_directory'
+    # https://www.pythonguis.com/faq/built-in-qicons-pyqt/#qt-standard-icons
+    VIRTUALFOREX_ICON_EXIT = QStyle.SP_MessageBoxCritical
+    VIRTUALFOREX_ICON_SETTINGS = QStyle.SP_VistaShield
+    VIRTUALFOREX_DATA_OBJECTS_KEY = 'dataobjects'
+
+    # SPLASH SCREEN
+    VIRTUALFOREX_SPLASH_SCREEN_TITLE = 'Virtual FX Tester'
+    VIRTUALFOREX_SPLASH_SCREEN_SUB_TEXT = '(This software is for research only)'
+    VIRTUALFOREX_SPLASH_SCREEN_TITLE_STYLE_SHEET = 'color: rgb(64, 64, 64); font-weight: bold; font-size: 32pt;'
+    VIRTUALFOREX_SPLASH_SCREEN_SUB_TEXT_STYLE_SHEET = 'color: rgb(64, 64, 64); font-style: italic; font-size: 14pt;'
+    VIRTUALFOREX_SPLASH_SCREEN_WINDOW_W = 500
+    VIRTUALFOREX_SPLASH_SCREEN_WINDOW_H = 300
+    VIRTUALFOREX_SPLASH_SCREEN_START_APP_BUTTON_TEXT = 'Start app'
+    VIRTUALFOREX_SPLASH_SCREEN_CLOSE_BUTTON_TEXT = 'Quit'
+    VIRTUALFOREX_SPLASH_SCREEN_BACKGROUND_IMAGE = 'body-composition.jpg'
+    VIRTUALFOREX_SPLASH_SCREEN_BACKGROUND_IMAGE_OPACITY = 0.4
+
+    # RESOURCES
+    VIRTUALFOREX_RESOURCES_DIR = 'virtualforex/resources'
+    VIRTUALFOREX_RESOURCES_IMAGES_DIR = 'virtualforex/resources/images'
+    VIRTUALFOREX_RESOURCES_IMAGES_ICONS_DIR = 'virtualforex/resources/images/icons'
+    VIRTUALFOREX_RESOURCES_ICON = 'virtualforex.icns' if is_macos() else 'virtualforex.ico'
+
+    # MENUS
+    VIRTUALFOREX_APP_MENU_TEXT = 'Application'
+    VIRTUALFOREX_APP_MENU_OPEN_SETTINGS_PANEL_ACTION_TEXT = 'Settings...'
+    VIRTUALFOREX_APP_MENU_OPEN_DATA_PANEL_ACTION_TEXT = 'Data Manager...'
+    VIRTUALFOREX_APP_MENU_EXIT_ACTION_TEXT = 'Exit'
+    VIRTUALFOREX_DATA_MENU_TEXT = 'Data'
+    VIRTUALFOREX_DATA_MENU_LOAD_DICOM_FILE_ACTION_TEXT = 'Load DICOM file...'
+    VIRTUALFOREX_DATA_MENU_LOAD_MULTI_DICOM_FILE_ACTION_TEXT = 'Load multiple DICOM files...'
+    VIRTUALFOREX_DATA_MENU_LOAD_DICOM_SERIES_ACTION_TEXT = 'Load DICOM series...'
+    VIRTUALFOREX_DATA_MENU_LOAD_MULTI_DICOM_SERIES_ACTION_TEXT = 'Load multiple DICOM series...'
+    VIRTUALFOREX_TASKS_MENU_TEXT = 'Tasks'
+    VIRTUALFOREX_TASKS_MENU_DECOMPRESS_DICOM_FILES_TASK_ACTION_TEXT = 'Decompress DICOM files'
+    VIRTUALFOREX_TASKS_MENU_RESCALE_DICOM_FILES_TASK_ACTION_TEXT = 'Rescale DICOM files'
+    VIRTUALFOREX_TASKS_MENU_SEGMENT_MUSCLE_FAT_L3_TASK_ACTION_TEXT = 'Segment muscle/fat L3'
+    VIRTUALFOREX_TASKS_MENU_SEGMENT_MUSCLE_FAT_L3_TENSORFLOW_TASK_ACTION_TEXT = 'Segment muscle/fat L3 (TensorFlow)'
+    VIRTUALFOREX_TASKS_MENU_CREATE_PNGS_FROM_SEGMENTATIONS_TASK_ACTION_TEXT = 'Create PNGs from segmentations'
+    VIRTUALFOREX_TASKS_MENU_CALCULATE_SCORES_TASK_ACTION_TEXT = 'Calculate scores'
+    VIRTUALFOREX_PIPELINES_MENU_TEXT = 'Pipelines'
+    VIRTUALFOREX_PIPELINES_MENU_DEFAULT_PIPELINE_ACTION_TEXT = 'Default pipeline'
+
+    # PANELS
+    VIRTUALFOREX_MAIN_PANEL_NAME = 'mainpanel'
+    VIRTUALFOREX_MAIN_PANEL_NAME_TITLE_LABEL_STYLESHEET = 'color: black; font-weight: bold; font-size: 14pt;'
+    VIRTUALFOREX_LOG_PANEL_TITLE = 'Output log'
+    VIRTUALFOREX_LOG_PANEL_NAME = 'logpanel'
+    VIRTUALFOREX_LOG_PANEL_CLEAR_LOGS_BUTTON = 'Clear logs'
+    VIRTUALFOREX_DATA_PANEL_TITLE = 'Data manager'
+    VIRTUALFOREX_DATA_PANEL_NAME ='datapanel'
+    VIRTUALFOREX_SETTINGS_PANEL_TITLE = 'Settings'
+    VIRTUALFOREX_SETTINGS_PANEL_NAME ='settingspanel'
+    VIRTUALFOREX_SETTINGS_PANEL_NAME_COLUMN_NAME = 'NAME'
+    VIRTUALFOREX_SETTINGS_PANEL_VALUE_COLUMN_NAME = 'VALUE'
+    VIRTUALFOREX_SETTINGS_PANEL_CANNOT_DISPLAY_MESSAGE = 'Cannot display (binary data)'
+
+    # DIALOGS
