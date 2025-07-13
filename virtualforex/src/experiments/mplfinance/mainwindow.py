@@ -11,6 +11,7 @@ END_DATE = "2025-02-01"
 STYLE=  'yahoo'
 
 
+# https://chatgpt.com/c/68739930-54d8-800b-8b00-57fa886b9ea9
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
