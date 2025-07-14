@@ -7,7 +7,7 @@ from rbeesoft.ui.settings import Settings
 from virtualforex.ui.constants import Constants
 from virtualforex.ui.mainwindow import MainWindow
 from virtualforex.ui.components.splashscreen import SplashScreen
-from virtualforex.ui.utils import resource_path, version
+from virtualforex.ui.utils import version
 
 
 def main():

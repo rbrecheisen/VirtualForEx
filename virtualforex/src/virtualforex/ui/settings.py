@@ -1,10 +1,6 @@
 from PySide6.QtCore import QSettings
 
-import mosamaticdesktop.ui.constants as constants
-
-from mosamaticdesktop.core.utils.logmanager import LogManager
-
-LOG = LogManager()
+from virtualforex.ui.constants import Constants
 
 
 class Settings(QSettings):
@@ -12,19 +8,19 @@ class Settings(QSettings):
         super(Settings, self).__init__(
             QSettings.IniFormat, 
             QSettings.UserScope, 
-            constants.MOSAMATICDESKTOP_BUNDLE_IDENTIFIER, 
-            constants.MOSAMATICDESKTOP_NAME,
+            Constants.VIRTUALFOREX_BUNDLE_IDENTIFIER, 
+            Constants.VIRTUALFOREX_NAME,
         )
 
     def prepend_bundle_identifier_and_name(self, name):
         return '{}.{}.{}'.format(
-            constants.MOSAMATICDESKTOP_BUNDLE_IDENTIFIER, 
-            constants.MOSAMATICDESKTOP_NAME,
+            Constants.VIRTUALFOREX_BUNDLE_IDENTIFIER, 
+            Constants.VIRTUALFOREX_NAME,
             name,
         )
 
     def get(self, name, default=None):
-        if not name.startswith(constants.MOSAMATICDESKTOP_BUNDLE_IDENTIFIER):
+        if not name.startswith(Constants.VIRTUALFOREX_BUNDLE_IDENTIFIER):
             name = self.prepend_bundle_identifier_and_name(name)
         value = self.value(name)
         if value is None or value == '':
@@ -34,8 +30,3 @@ class Settings(QSettings):
     def set(self, name, value):
         name = self.prepend_bundle_identifier_and_name(name)
         self.setValue(name, value)
-
-    def print(self):
-        LOG.info(f'Settings path: {self.fileName()}')
-        for key in self.allKeys():
-            LOG.info(f'Settings: {key}')

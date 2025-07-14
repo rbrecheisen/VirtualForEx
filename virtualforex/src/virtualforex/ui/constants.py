@@ -25,7 +25,7 @@ class Constants:
 
     # SPLASH SCREEN
     VIRTUALFOREX_SPLASH_SCREEN_TITLE = 'Virtual FX Tester'
-    VIRTUALFOREX_SPLASH_SCREEN_SUB_TEXT = '(This software is for research only)'
+    VIRTUALFOREX_SPLASH_SCREEN_SUB_TEXT = 'This software is for back-testing only.\nExpect different results on live data.'
     VIRTUALFOREX_SPLASH_SCREEN_TITLE_STYLE_SHEET = 'color: rgb(64, 64, 64); font-weight: bold; font-size: 32pt;'
     VIRTUALFOREX_SPLASH_SCREEN_SUB_TEXT_STYLE_SHEET = 'color: rgb(64, 64, 64); font-style: italic; font-size: 14pt;'
     VIRTUALFOREX_SPLASH_SCREEN_WINDOW_W = 500
