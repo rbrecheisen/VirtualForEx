@@ -1,8 +1,6 @@
 import pandas as pd
 import mplfinance as mpf
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.ticker as ticker
 
 from matplotlib.dates import num2date
 
@@ -13,6 +11,7 @@ from PySide6.QtWidgets import (
 from virtualforex.ui.panels.panel import Panel
 from virtualforex.ui.components.figurecanvas import FigureCanvas
 from virtualforex.ui.components.navigationtoolbar import NavigationToolbar
+from virtualforex.core.pricedata import PriceData
 
 
 class PriceChartPanel(Panel):
@@ -63,7 +62,7 @@ class PriceChartPanel(Panel):
 
     def set_price_data(self, price_data):
         self._price_data = price_data
-        self.update_chart(self._price_data.all())
+        self.update_chart(self._price_data.first_n(PriceData.DEFAULT_PAGE_SIZE))
 
     def page_size(self):
         if self.price_data():

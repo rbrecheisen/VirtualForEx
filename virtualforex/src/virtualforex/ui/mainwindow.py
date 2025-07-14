@@ -16,8 +16,7 @@ from rbeesoft.ui.mainwindow import MainWindow as BaseMainWindow
 from virtualforex.ui.panels.stackedpanel import StackedPanel
 from virtualforex.ui.panels.pricechartpanel import PriceChartPanel
 from virtualforex.ui.dialogs.loadpricedatadialog import LoadPriceDataDialog
-
-# Add pull-down menu for drawing lines: (1) buy stop, (2) sell stop, (3) stop loss, (4) take profit
+from virtualforex.core.pricedata import PriceData
 
 
 class MainWindow(BaseMainWindow):
@@ -84,7 +83,7 @@ class MainWindow(BaseMainWindow):
         if not self._page_size_spinbox:
             self._page_size_spinbox = QSpinBox(minimum=10, maximum=500)
             self._page_size_spinbox.valueChanged.connect(self.handle_page_size_spinbox)
-            self._page_size_spinbox.setValue(50)
+            self._page_size_spinbox.setValue(PriceData.DEFAULT_PAGE_SIZE)
         return self._page_size_spinbox
     
     def line_type_combobox(self):
@@ -106,8 +105,9 @@ class MainWindow(BaseMainWindow):
         button_layout.addWidget(self.next_candle_page_button())
         layout = QVBoxLayout()
         layout.addLayout(button_layout)
+        layout.addWidget(QLabel('Page size:'))
         layout.addWidget(self.page_size_spinbox())
-        layout.addWidget(QLabel('Line type'))
+        layout.addWidget(QLabel('Line type:'))
         layout.addWidget(self.line_type_combobox())
         layout.addWidget(self.main_panel())
         self.centralWidget().setLayout(layout)
