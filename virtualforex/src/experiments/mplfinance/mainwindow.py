@@ -2,6 +2,9 @@ import sys
 import pandas as pd
 import numpy as np
 import mplfinance as mpf
+
+from matplotlib.dates import num2date
+
 from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -39,10 +42,10 @@ class MainWindow(QMainWindow):
         return self._toolbar
 
     def fig(self):
-        df = pd.read_csv("G:\\My Drive\\data\\MetaTrader5\\EURUSDDaily.csv", parse_dates=['Date'])
+        df = pd.read_csv("G:\\My Drive\\data\\MetaTrader5\\EURUSD_D1.csv", parse_dates=['Date'])
         df.set_index('Date', inplace=True)
         filtered_df = df.loc[START_DATE:END_DATE]
-        fig, axlist = mpf.plot(filtered_df, type='candle', style='yahoo', returnfig=True)
+        fig, axlist = mpf.plot(filtered_df, type='candle', style='yahoo', returnfig=True, show_nontrading=True)
         self._main_ax = axlist[0]  # Candlestick plot is in the first axis
         return fig
     
@@ -53,8 +56,9 @@ class MainWindow(QMainWindow):
         if self.toolbar().mode != '':
             return
         if event.inaxes == self.main_ax():
+            from datetime import datetime
             y = event.ydata
-            print(f"Clicked at price: {y:.2f}")
+            print(f"Clicked at price: {y:.2f}, date: {num2date(event.xdata, tz=datetime.now().astimezone().tzinfo)}")
             line = self.main_ax().axhline(y=y, color='green', linestyle='--', linewidth=1.2)
             self.lines.append(line)
             self.canvas().draw()

@@ -16,6 +16,7 @@ from PySide6.QtCore import QDate
 
 from virtualforex.ui.dialogs.dialog import Dialog
 from virtualforex.ui.settings import Settings
+from virtualforex.core.pricedata import PriceData
 
 CALENDAR_STYLESHEET = 'QCalendarWidget QAbstractItemView::item:selected {background-color: #0078d7; color: white; border-radius: 4px;}'
 
@@ -32,7 +33,7 @@ class LoadPriceDataDialog(Dialog):
         self._ok_button = None
         self._cancel_button = None
         self._settings = None
-        self._data = None
+        self._price_data = None
         self.init_layout()
 
     # GET/SET
@@ -79,7 +80,7 @@ class LoadPriceDataDialog(Dialog):
     def ok_button(self):
         if not self._ok_button:
             self._ok_button = QPushButton('Ok', self)
-            self._ok_button.clicked.connect(self.handle_ok_button)
+            self._ok_button.clicked.connect(self.accept)
         return self._ok_button
     
     def cancel_button(self):
@@ -93,20 +94,15 @@ class LoadPriceDataDialog(Dialog):
             self._settings = Settings()
         return self._settings
     
-    def data(self):
-        return self._data
+    def price_data(self):
+        return self._price_data
     
-    def set_data(self, data):
-        self._data = data
+    def set_price_data(self, price_data):
+        self._price_data = price_data
 
     # UTILITY
 
-    def start_date(self, data):
-        date = data.index[0]
-        return QDate(date.year, date.month, date.day)
-    
-    def end_date(self, data):
-        date = data.index[-1]
+    def to_q_date(self, date):
         return QDate(date.year, date.month, date.day)
     
     def symbol_name_and_timeframe(self, file_path):
@@ -136,30 +132,31 @@ class LoadPriceDataDialog(Dialog):
         self.setLayout(layout)
         self.setWindowTitle('Load price data')        
 
+    # UTILITY
+
+    def update_price_data(self, file_path):
+        self.file_path_line_edit().setText(file_path)
+        symbol_name, timeframe = self.symbol_name_and_timeframe(file_path)
+        self.symbol_name_label().setText(symbol_name)
+        self.timeframe_label().setText(timeframe)
+        if timeframe == 'H4':
+            data = pd.read_csv(file_path, parse_dates=['Date'], date_format='%Y.%m.%d %H:%M')
+        else:
+            data = pd.read_csv(file_path, parse_dates=['Date'], date_format='%Y.%m.%d')
+        data = data.set_index('Date', inplace=False)
+        price_data = PriceData(data, name=f'{self.symbol_name()} ({self.timeframe()})')
+        self.set_price_data(price_data)
+
+    def update_calendars(self):
+        self.start_date_calendar_widget().setSelectedDate(self.to_q_date(self.price_data().start_date()))
+        self.end_date_calendar_widget().setSelectedDate(self.to_q_date(self.price_data().end_date()))
+
     # EVENTS
 
     def handle_file_path_select_button(self):
         last_directory = self.settings().get('last_directory', '.')
         file_path, _ = QFileDialog.getOpenFileName(self, 'Select file path', last_directory)
         if file_path:
-            self.file_path_line_edit().setText(file_path)
-            symbol_name, timeframe = self.symbol_name_and_timeframe(file_path)
-            self.symbol_name_label().setText(symbol_name)
-            self.timeframe_label().setText(timeframe)
-            data = pd.read_csv(file_path, parse_dates=['Date'])
-            data = data.set_index('Date', inplace=False)
-            self.set_data(data)
-            self.start_date_calendar_widget().setSelectedDate(self.start_date(data))
-            self.end_date_calendar_widget().setSelectedDate(self.end_date(data))
+            self.update_price_data(file_path)
+            self.update_calendars()
             self.settings().set('last_directory', os.path.dirname(file_path))
-            QMessageBox.information(self, 'Success', 'Successfully loaded price data')
-
-    def handle_ok_button(self):
-        date = self.start_date_calendar_widget().selectedDate()
-        start_date_string = f'{date.year()}-{date.month():02d}-{date.day():02d}'
-        date = self.end_date_calendar_widget().selectedDate()
-        end_date_string = f'{date.year()}-{date.month():02d}-{date.day():02d}'
-        data = self.data()
-        data = data.loc[start_date_string:end_date_string]
-        self.set_data(data)
-        self.accept()
