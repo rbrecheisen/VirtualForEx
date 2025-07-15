@@ -6,7 +6,8 @@ class Trade:
         self._sell_stop = None
         self._stop_loss = None
         self._take_profit = None
-        
+        self._active = False
+        self._bars = []
 
     def symbol(self):
         return self._symbol
@@ -43,3 +44,56 @@ class Trade:
     
     def set_take_profit(self, take_profit):
         self._take_profit = take_profit
+
+    def bars(self):
+        return self._bars
+
+    # HELPERS
+
+    def add_bar(self, bar):
+        self.bars().append(bar)
+
+    def is_active(self):
+        return self._active
+
+    def buy_stop_hit(self, price):
+        if self.buy_stop():
+            hit = price > self.buy_stop()
+            if hit:
+                self._active = True
+            return hit
+        raise RuntimeError('No buy stop set')
+    
+    def sell_stop_hit(self, price):
+        if self.sell_stop():
+            hit = price < self.sell_stop()
+            if hit:
+                self._active = True
+            return hit
+        raise RuntimeError('No sell stop set')
+
+    def stop_loss_hit(self, price):
+        if self.buy_stop():
+            hit = price < self.stop_loss()
+            if hit:
+                self._active = False
+            return hit
+        if self.sell_stop():
+            hit = price > self.stop_loss()
+            if hit:
+                self._active = False
+            return hit
+        raise RuntimeError('No buy or sell stop set')
+    
+    def take_profit_hit(self, price):
+        if self.buy_stop():
+            hit = price > self.take_profit()
+            if hit:
+                self._active = False
+            return hit
+        if self.sell_stop():
+            hit = price < self.take_profit()
+            if hit:
+                self._active = False
+            return hit
+        raise RuntimeError('No buy or sell stop set')
