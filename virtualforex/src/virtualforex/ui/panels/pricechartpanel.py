@@ -6,12 +6,15 @@ from matplotlib.dates import num2date
 
 from PySide6.QtWidgets import (
     QVBoxLayout,
+    QMessageBox,
 )
 
 from virtualforex.ui.panels.panel import Panel
 from virtualforex.ui.components.figurecanvas import FigureCanvas
 from virtualforex.ui.components.navigationtoolbar import NavigationToolbar
 from virtualforex.core.pricedata import PriceData
+from virtualforex.core.trade import Trade
+from virtualforex.core.tradehistory import TradeHistory
 
 
 class PriceChartPanel(Panel):
@@ -30,6 +33,8 @@ class PriceChartPanel(Panel):
         self._price_data = None
         self._cid = None
         self._click_state = None
+        self._current_trade = None
+        self._lines = []
         self.init_layout()
 
     # GET/SET
@@ -78,6 +83,18 @@ class PriceChartPanel(Panel):
     def set_click_state(self, click_state):
         self._click_state = click_state
 
+    def current_trade(self):
+        return self._current_trade
+    
+    def create_new_current_trade(self):
+        self._current_trade = Trade()
+
+    def save_current_trade(self):
+        pass
+
+    def lines(self):
+        return self._lines
+
     # LAYOUT
 
     def init_layout(self):
@@ -93,18 +110,53 @@ class PriceChartPanel(Panel):
             self.update_chart(self.price_data().all())
 
     def show_prev_candle(self):
+        if self.current_trade():
+            QMessageBox.information(self, 'Info', 'When a trade is open, you cannot go back')
+            return
         if self.price_data():
             self.update_chart(self.price_data().prev())
 
     def show_prev_candle_page(self):
+        if self.current_trade():
+            QMessageBox.information(self, 'Info', 'When a trade is open, you cannot go back')
         if self.price_data():
             self.update_chart(self.price_data().prev_page())
 
     def show_next_candle(self):
         if self.price_data():
             self.update_chart(self.price_data().next())
+            if self.current_trade():
+                last_bar = self.price_data().last_bar()
+                if self.current_trade().buy_stop():
+                    if self.current_trade().buy_stop_hit(last_bar.high()):
+                        print(f'Buy stop was hit at {self.current_trade().buy_stop()}')
+                    if self.current_trade().stop_loss_hit(last_bar.low()):
+                        print(f'Stop loss for BUY order was hit at {self.current_trade().stop_loss()}')
+                        print(f'   Profit in euros: {self.current_trade().profit()}')
+                        # self.lines().clear()
+                        # self.update_chart(self.price_data().current())
+                    if self.current_trade().take_profit_hit(last_bar.high()):
+                        print(f'Take profit level for BUY order was hit at {self.current_trade().take_profit()}')
+                        print(f'   Profit in euros: {self.current_trade().profit()}')
+                        # self.lines().clear()
+                        # self.update_chart(self.price_data().current())
+                elif self.current_trade().sell_stop():
+                    if self.current_trade().sell_stop_hit(last_bar.low()):
+                        print(f'Sell stop was hit at {self.current_trade().sell_stop()}')
+                    if self.current_trade().stop_loss_hit(last_bar.high()):
+                        print(f'Stop loss for SELL order was hit at {self.current_trade().stop_loss()}')
+                        print(f'   Profit in euros: {self.current_trade().profit()}')
+                        # self.lines().clear()
+                        # self.update_chart(self.price_data().current())
+                    if self.current_trade().take_profit_hit(last_bar.low()):
+                        print(f'Take profit level for SELL order was hit at {self.current_trade().take_profit()}')
+                        print(f'   Profit in euros: {self.current_trade().profit()}')
+                        # self.lines().clear()
+                        # self.update_chart(self.price_data().current())
 
     def show_next_candle_page(self):
+        if self.current_trade():
+            QMessageBox.information(self, 'Info', 'When a trade is open, you cannot move forward a whole page')
         if self.price_data():
             self.update_chart(self.price_data().next_page())
 
@@ -121,6 +173,9 @@ class PriceChartPanel(Panel):
         self.set_chart(axlist[0])
         for label in self.chart().get_xticklabels():
             label.set_rotation(90)
+        # Redraw any lines
+        for line in self.lines():
+            self.draw_line(line['price'], line['color'], line['label'])
         self.layout().removeWidget(self.canvas())
         self.layout().removeWidget(self.navigation_toolbar())
         self.navigation_toolbar().setParent(None)
@@ -151,15 +206,27 @@ class PriceChartPanel(Panel):
             button = event.button
             price = event.ydata
             if button == 1:
-                if self.click_state() == PriceChartPanel.BUY_STOP:
-                    self.draw_line(price, 'blue', 'Buy Stop')
-                elif self.click_state() == PriceChartPanel.SELL_STOP:
-                    self.draw_line(price, 'blue', 'Sell Stop')
-                elif self.click_state() == PriceChartPanel.STOP_LOSS:
-                    self.draw_line(price, 'red', 'Stop Loss')
-                elif self.click_state() == PriceChartPanel.TAKE_PROFIT:
-                    self.draw_line(price, 'green', 'Take Profit')
-                else:
-                    print(f'date: {date}, price: {price}')
+                if self.current_trade():
+                    if self.click_state() == PriceChartPanel.BUY_STOP:
+                        color, label = 'blue', 'Buy Stop'
+                        self.draw_line(price, color, label)
+                        self.lines().append({'price': price, 'color': color, 'label': label})
+                        self.current_trade().set_buy_stop(price)
+                    elif self.click_state() == PriceChartPanel.SELL_STOP:
+                        color, label = 'blue', 'Sell Stop'
+                        self.draw_line(price, color, label)
+                        self.lines().append({'price': price, 'color': color, 'label': label})
+                        self.current_trade().set_sell_stop(price)
+                    elif self.click_state() == PriceChartPanel.STOP_LOSS:
+                        color, label = 'red', 'Stop Loss'
+                        self.draw_line(price, color, label)
+                        self.lines().append({'price': price, 'color': color, 'label': label})
+                        self.current_trade().set_stop_loss(price)
+                    elif self.click_state() == PriceChartPanel.TAKE_PROFIT:
+                        color, label = 'green', 'Take Profit'
+                        self.draw_line(price, color, label)
+                        self.lines().append({'price': price, 'color': color, 'label': label})
+                        self.current_trade().set_take_profit(price)
+                print(f'date: {date}, price: {price}')
             if button == 3:
                 self.jump_to_date(date)

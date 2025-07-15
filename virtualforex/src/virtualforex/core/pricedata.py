@@ -113,6 +113,10 @@ class PriceData:
         self.set_last_bar(self.create_bar_from_row(data.iloc[-1]))
         return data
     
+    def current(self):
+        data = self.data().iloc[self._first_idx:self._last_idx]
+        return data
+    
     def all(self):
         self._first_idx, self._last_idx = 0, len(self.data()) + 1
         data = self.data().iloc[self._first_idx:self._last_idx]

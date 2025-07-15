@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QSpinBox,
     QLabel,
+    QMessageBox,
 )
 from PySide6.QtGui import (
     QAction,
@@ -29,6 +30,9 @@ class MainWindow(BaseMainWindow):
         self._next_candle_button = None
         self._next_candle_page_button = None
         self._last_candle_button = None
+        self._open_trade_button = None
+        self._save_trade_button = None
+        self._show_trade_button = None
         self._page_size_spinbox = None
         self._line_type_combobox = None
         self.init_layout()
@@ -79,6 +83,24 @@ class MainWindow(BaseMainWindow):
             self._next_candle_page_button.clicked.connect(self.handle_next_candle_page_button)
         return self._next_candle_page_button
     
+    def open_trade_button(self):
+        if not self._open_trade_button:
+            self._open_trade_button = QPushButton('Open trade', self)
+            self._open_trade_button.clicked.connect(self.handle_open_trade_button)
+        return self._open_trade_button
+    
+    def save_trade_button(self):
+        if not self._save_trade_button:
+            self._save_trade_button = QPushButton('Save trade', self)
+            self._save_trade_button.clicked.connect(self.handle_save_trade_button)
+        return self._save_trade_button
+    
+    def show_trade_button(self):
+        if not self._show_trade_button:
+            self._show_trade_button = QPushButton('Show trade', self)
+            self._show_trade_button.clicked.connect(self.handle_show_trade_button)
+        return self._show_trade_button
+    
     def page_size_spinbox(self):
         if not self._page_size_spinbox:
             self._page_size_spinbox = QSpinBox(minimum=10, maximum=500)
@@ -103,8 +125,13 @@ class MainWindow(BaseMainWindow):
         button_layout.addWidget(self.prev_candle_button())
         button_layout.addWidget(self.next_candle_button())
         button_layout.addWidget(self.next_candle_page_button())
+        trade_button_layout = QHBoxLayout()
+        trade_button_layout.addWidget(self.open_trade_button())
+        trade_button_layout.addWidget(self.save_trade_button())
+        trade_button_layout.addWidget(self.show_trade_button())
         layout = QVBoxLayout()
         layout.addLayout(button_layout)
+        layout.addLayout(trade_button_layout)
         layout.addWidget(QLabel('Page size:'))
         layout.addWidget(self.page_size_spinbox())
         layout.addWidget(QLabel('Line type:'))
@@ -150,6 +177,19 @@ class MainWindow(BaseMainWindow):
 
     def handle_next_candle_page_button(self):
         self.price_chart_panel().show_next_candle_page()
+
+    def handle_open_trade_button(self):
+        self.price_chart_panel().create_new_current_trade()
+        QMessageBox.information(self, 'Info', 'Trade opened. Please add buy/sell stop, stop loss and take profit')
+
+    def handle_save_trade_button(self):
+        self.price_chart_panel().save_current_trade()
+        QMessageBox.information(self, 'Info', 'Trade saved. Please advance chart to test trade.')
+
+    def handle_show_trade_button(self):
+        trade = self.price_chart_panel().current_trade()
+        if trade:
+            QMessageBox.information(self, 'Info', str(trade))
 
     def handle_page_size_spinbox(self, new_value):
         self.price_chart_panel().set_page_size(new_value)
