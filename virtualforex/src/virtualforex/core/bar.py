@@ -1,9 +1,13 @@
 class Bar:
-    def __init__(self, open, high, low, close):
+    def __init__(self, timestamp, open, high, low, close):
+        self._timestamp = timestamp
         self._open = open
         self._high = high
         self._low = low
         self._close = close
+
+    def timestamp(self):
+        return self._timestamp
 
     def open(self):
         return self._open
@@ -18,4 +22,4 @@ class Bar:
         return self._close
     
     def __str__(self):
-        return f'Bar(open={self.open()}, high={self.high()}, low={self.low()}, close={self.close()})'
+        return f'Bar(timestsamp={self.timestamp()}, open={self.open()}, high={self.high()}, low={self.low()}, close={self.close()})'

@@ -43,7 +43,7 @@ class PriceData:
         return self.data().index[-1]
     
     def create_bar_from_row(self, row):
-        return Bar(row['Open'], row['High'], row['Low'], row['Close'])
+        return Bar(row.name, row['Open'], row['High'], row['Low'], row['Close'])
     
     def first_n(self, n):
         self._first_idx, self._last_idx = 0, n
