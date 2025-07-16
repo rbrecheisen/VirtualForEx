@@ -14,146 +14,44 @@ from PySide6.QtGui import (
 from PySide6.QtCore import Qt
 
 from rbeesoft.ui.mainwindow import MainWindow as BaseMainWindow
-from virtualforex.ui.panels.stackedpanel import StackedPanel
-from virtualforex.ui.panels.pricechartpanel import PriceChartPanel
-from virtualforex.ui.dialogs.loadpricedatadialog import LoadPriceDataDialog
-from virtualforex.core.pricedata import PriceData
+from virtualforex.ui.maindockwidget import MainDockWidget
+from virtualforex.ui.sidedockwidget import SideDockWidget
+from virtualforex.ui.loadpricedatadialog import LoadPriceDataDialog
 
 
 class MainWindow(BaseMainWindow):
-    def __init__(self, title, app_name, version, icon):
-        super(MainWindow, self).__init__(title, app_name, version, icon)
-        self._price_chart_panel = None
-        self._main_panel = None
-        self._prev_candle_button = None
-        self._prev_candle_page_button = None
-        self._next_candle_button = None
-        self._next_candle_page_button = None
-        self._last_candle_button = None
-        self._open_trade_button = None
-        self._save_trade_button = None
-        self._show_trade_button = None
-        self._page_size_spinbox = None
-        self._line_type_combobox = None
+    def __init__(self):
+        super(MainWindow, self).__init__('VirtualFX', 'virtualfx', '1.0', None)
+        self._main_dockwidget = None
+        self._side_dockwidget = None
         self.init_layout()
 
     # GET/SET
 
-    def price_chart_panel(self):
-        if not self._price_chart_panel:
-            self._price_chart_panel = PriceChartPanel()
-        return self._price_chart_panel
+    def main_dockwidget(self):
+        if not self._main_dockwidget:
+            self._main_dockwidget = MainDockWidget(self)
+        return self._main_dockwidget
     
-    def main_panel(self):
-        if not self._main_panel:
-            self._main_panel = StackedPanel()
-            self._main_panel.add_panel(self.price_chart_panel(), 'price_chart')
-            self._main_panel.switch_to('price_chart')
-        return self._main_panel
-    
-    def prev_candle_button(self):
-        if not self._prev_candle_button:
-            self._prev_candle_button = QPushButton('<', self)
-            self._prev_candle_button.setToolTip('Key = A')
-            self._prev_candle_button.setStyleSheet('color: white; background-color: green; font-weight: bold;')
-            self._prev_candle_button.clicked.connect(self.handle_prev_candle_button)
-        return self._prev_candle_button
-    
-    def prev_candle_page_button(self):
-        if not self._prev_candle_page_button:
-            self._prev_candle_page_button = QPushButton('<<', self)
-            self._prev_candle_page_button.setToolTip('Key = PageUp')
-            self._prev_candle_page_button.setStyleSheet('color: white; background-color: green; font-weight: bold;')
-            self._prev_candle_page_button.clicked.connect(self.handle_prev_candle_page_button)
-        return self._prev_candle_page_button
-    
-    def next_candle_button(self):
-        if not self._next_candle_button:
-            self._next_candle_button = QPushButton('>', self)
-            self._next_candle_button.setToolTip('Key = D')
-            self._next_candle_button.setStyleSheet('color: white; background-color: green; font-weight: bold;')
-            self._next_candle_button.clicked.connect(self.handle_next_candle_button)
-        return self._next_candle_button
-    
-    def next_candle_page_button(self):
-        if not self._next_candle_page_button:
-            self._next_candle_page_button = QPushButton('>>', self)
-            self._next_candle_page_button.setToolTip('Key = PageDown')
-            self._next_candle_page_button.setStyleSheet('color: white; background-color: green; font-weight: bold;')
-            self._next_candle_page_button.clicked.connect(self.handle_next_candle_page_button)
-        return self._next_candle_page_button
-    
-    def open_trade_button(self):
-        if not self._open_trade_button:
-            self._open_trade_button = QPushButton('Open trade', self)
-            self._open_trade_button.clicked.connect(self.handle_open_trade_button)
-        return self._open_trade_button
-    
-    def save_trade_button(self):
-        if not self._save_trade_button:
-            self._save_trade_button = QPushButton('Save trade', self)
-            self._save_trade_button.clicked.connect(self.handle_save_trade_button)
-        return self._save_trade_button
-    
-    def show_trade_button(self):
-        if not self._show_trade_button:
-            self._show_trade_button = QPushButton('Show trade', self)
-            self._show_trade_button.clicked.connect(self.handle_show_trade_button)
-        return self._show_trade_button
-    
-    def page_size_spinbox(self):
-        if not self._page_size_spinbox:
-            self._page_size_spinbox = QSpinBox(minimum=10, maximum=500)
-            self._page_size_spinbox.valueChanged.connect(self.handle_page_size_spinbox)
-            self._page_size_spinbox.setValue(PriceData.DEFAULT_PAGE_SIZE)
-        return self._page_size_spinbox
-    
-    def line_type_combobox(self):
-        if not self._line_type_combobox:
-            self._line_type_combobox = QComboBox()
-            self._line_type_combobox.addItems([None, 'Buy Stop', 'Sell Stop', 'Stop Loss', 'Take Profit'])
-            self._line_type_combobox.currentTextChanged.connect(self.handle_line_type_combobox)
-        return self._line_type_combobox
+    def side_dockwidget(self):
+        if not self._side_dockwidget:
+            self._side_dockwidget = SideDockWidget(self)
+            self._side_dockwidget.price_chart_controls().add_listener(self.main_dockwidget().price_chart())
+        return self._side_dockwidget
     
     # LAYOUT
     
     def init_layout(self):
-        self.init_menus()
-        self.setCentralWidget(QWidget())
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.prev_candle_page_button())
-        button_layout.addWidget(self.prev_candle_button())
-        button_layout.addWidget(self.next_candle_button())
-        button_layout.addWidget(self.next_candle_page_button())
-        trade_button_layout = QHBoxLayout()
-        trade_button_layout.addWidget(self.open_trade_button())
-        trade_button_layout.addWidget(self.save_trade_button())
-        trade_button_layout.addWidget(self.show_trade_button())
-        layout = QVBoxLayout()
-        layout.addLayout(button_layout)
-        layout.addLayout(trade_button_layout)
-        layout.addWidget(QLabel('Page size:'))
-        layout.addWidget(self.page_size_spinbox())
-        layout.addWidget(QLabel('Line type:'))
-        layout.addWidget(self.line_type_combobox())
-        layout.addWidget(self.main_panel())
-        self.centralWidget().setLayout(layout)
-
-    def init_menus(self):
         self.init_data_menu()
-        self.init_view_menu()
+        self.setWindowTitle('VirtualFX')
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.main_dockwidget())
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.side_dockwidget())
 
     def init_data_menu(self):
         load_price_data_action = QAction('Load price data...', self)
         load_price_data_action.triggered.connect(self.handle_load_price_data_action)
-        menu = self.menuBar().addMenu('Data')
-        menu.addAction(load_price_data_action)
-
-    def init_view_menu(self):
-        show_all_candles_action = QAction('Show all candles', self)
-        show_all_candles_action.triggered.connect(self.handle_show_all_candles_action)
-        menu = self.menuBar().addMenu('View')
-        menu.addAction(show_all_candles_action)
+        data_menu = self.menuBar().addMenu('Data')
+        data_menu.addAction(load_price_data_action)
 
     # EVENTS
 
@@ -161,59 +59,5 @@ class MainWindow(BaseMainWindow):
         dialog = LoadPriceDataDialog()
         result = dialog.exec()
         if result:
-            self.price_chart_panel().set_price_data(dialog.price_data())
-
-    def handle_show_all_candles_action(self):
-        self.price_chart_panel().show_all_candles()
-
-    def handle_prev_candle_button(self):
-        self.price_chart_panel().show_prev_candle()
-
-    def handle_prev_candle_page_button(self):
-        self.price_chart_panel().show_prev_candle_page()
-
-    def handle_next_candle_button(self):
-        self.price_chart_panel().show_next_candle()
-
-    def handle_next_candle_page_button(self):
-        self.price_chart_panel().show_next_candle_page()
-
-    def handle_open_trade_button(self):
-        self.price_chart_panel().create_new_current_trade()
-        QMessageBox.information(self, 'Info', 'Trade opened. Please add buy/sell stop, stop loss and take profit')
-
-    def handle_save_trade_button(self):
-        self.price_chart_panel().save_current_trade()
-        QMessageBox.information(self, 'Info', 'Trade saved. Please advance chart to test trade.')
-
-    def handle_show_trade_button(self):
-        trade = self.price_chart_panel().current_trade()
-        if trade:
-            QMessageBox.information(self, 'Info', str(trade))
-
-    def handle_page_size_spinbox(self, new_value):
-        self.price_chart_panel().set_page_size(new_value)
-
-    def handle_line_type_combobox(self, text):
-        if text == 'Buy Stop':
-            self.price_chart_panel().set_click_state(PriceChartPanel.BUY_STOP)
-        elif text == 'Sell Stop':
-            self.price_chart_panel().set_click_state(PriceChartPanel.SELL_STOP)
-        elif text == 'Stop Loss':
-            self.price_chart_panel().set_click_state(PriceChartPanel.STOP_LOSS)
-        elif text == 'Take Profit':
-            self.price_chart_panel().set_click_state(PriceChartPanel.TAKE_PROFIT)
-        else:
-            self.price_chart_panel().set_click_state(None)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_PageUp:
-            self.handle_prev_candle_page_button()
-        elif event.key() == Qt.Key_PageDown:
-            self.handle_next_candle_page_button()
-        elif event.key() == Qt.Key_A:
-            self.handle_prev_candle_button()
-        elif event.key() == Qt.Key_D:
-            self.handle_next_candle_button()
-        else:
-            return super().keyPressEvent(event)
+            price_data = dialog.price_data()
+            self.main_dockwidget().price_chart().set_price_data(price_data)
