@@ -1,12 +1,16 @@
+import mplfinance as mpf
+
 from PySide6.QtWidgets import (
     QWidget,
+    QVBoxLayout,
+    QMessageBox,
 )
 
 from virtualforex.ui.components.figurecanvas import FigureCanvas
+from virtualforex.ui.components.figure import Figure
 from virtualforex.ui.components.navigationtoolbar import NavigationToolbar
 from virtualforex.ui.pricechartcontrolslistener import PriceChartControlsListener
 from virtualforex.core.data.pricedatawindow import PriceDataWindow
-from virtualforex.core.trading.trader import Trader
 from virtualforex.core.utils.logmanager import LogManager
 
 LOG = LogManager()
@@ -16,8 +20,9 @@ class PriceChart(QWidget, PriceChartControlsListener):
     def __init__(self, parent=None):
         super(PriceChart, self).__init__(parent)
         self._price_data = None
-        self._price_data_window = None
-        self._trader = None
+        self._canvas = None
+        self._navigation_toolbar = None
+        self.init_layout()
 
     # GET/SET
 
@@ -26,17 +31,25 @@ class PriceChart(QWidget, PriceChartControlsListener):
 
     def set_price_data(self, price_data):
         self._price_data = price_data
+        self.update_chart()
 
-    def price_data_window(self):
-        if not self._price_data_window:
-            self._price_data_window = PriceDataWindow(self.price_data())
-        return self._price_data_window
+    def canvas(self):
+        if not self._canvas:
+            self._canvas = FigureCanvas()
+        return self._canvas
     
-    def trader(self):
-        return self._trader
-    
-    def set_trader(self, trader):
-        self._trader = trader
+    def navigation_toolbar(self):
+        if not self._navigation_toolbar:
+            self._navigation_toolbar = NavigationToolbar(self.canvas())
+        return self._navigation_toolbar
+        
+    # LAYOUT
+
+    def init_layout(self):
+        layout = QVBoxLayout()
+        layout.addWidget(self.navigation_toolbar())
+        layout.addWidget(self.canvas())
+        self.setLayout(layout)
 
     # EVENTS
 
@@ -64,4 +77,16 @@ class PriceChart(QWidget, PriceChartControlsListener):
 
     def update_chart(self):
         if self.price_data():
-            pass
+            self.canvas().figure.clear()
+            ax = self.canvas().figure.add_subplot(111)
+            mpf.plot(
+                self.price_data().df(), 
+                type='candle', 
+                style='yahoo', 
+                returnfig=False, 
+                ax=ax,
+                show_nontrading=True
+            )
+            ax.set_title('EURUSD (D1)')
+            self.canvas().figure.tight_layout()
+            self.canvas().draw()
