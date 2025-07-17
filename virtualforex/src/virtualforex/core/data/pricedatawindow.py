@@ -6,7 +6,6 @@ class PriceDataWindow:
         self._price_data = price_data
         self._first_index = 0
         self._last_index = len(price_data.df())
-        print(f'PriceDataWindow.__init__() first_index = {self._first_index}, last_index = {self._last_index}')
         self._page_size = 100
         self._last_bar = None
 

@@ -49,10 +49,9 @@ class FigureCanvas(FigureCanvasQTAgg):
             self.figure.clear()
             title = f'{symbol} ({timeframe})'
             self._axis = self.figure.add_subplot(111)
-            mpf.plot(df, type='candle', style='yahoo', returnfig=False, ax=self._axis, show_nontrading=True)
+            mpf.plot(df, type='candle', style='yahoo', returnfig=False, ax=self._axis, show_nontrading=False)
             self._axis.set_title(title)
-            for label in self._axis.get_xticklabels():
-                label.set_rotation(90)
+            self._axis.set_xticklabels([]) # don't show dates because they are not relevant for testing
             xmin = self._axis.get_xlim()[0]
             for line_info in self.lines():
                 self._axis.axhline(

@@ -163,8 +163,11 @@ class PriceChart(QWidget, PriceChartControlsListener):
             if event.button == 1:
                 line = self.find_line_between(price-self.delta(), price+self.delta())
                 if not line:
-                    self.add_line(price, 'green', 'Buy Stop') # CREATE BUY STOP, STOP LOSS OR TAKE PROFIT AT THIS POINT!
+                    # This is a new line. Depending on the line type, a buy/sell stop should be placed
+                    # or a take profit point. The stop loss is calculated automatically.
+                    self.add_line(price, 'green', 'Buy Stop')
                 else:
+                    # User selected existing line, so he can move it
                     self.set_selected_line(line)
                     self.set_button_pressed(True)
             elif event.button == 3:
