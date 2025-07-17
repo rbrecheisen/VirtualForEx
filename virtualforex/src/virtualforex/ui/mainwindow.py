@@ -1,13 +1,3 @@
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QComboBox,
-    QSpinBox,
-    QLabel,
-    QMessageBox,
-)
 from PySide6.QtGui import (
     QAction,
 )
