@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QComboBox,
     QSpinBox,
-    QDoubleSpinBox,
+    QCheckBox,
     QLabel,
     QMessageBox,
 )
@@ -23,6 +23,7 @@ class PriceChartControls(QWidget):
         self._risk_spinbox = None
         self._pip_combobox = None
         self._page_size_combobox = None
+        self._calculate_stop_loss_checkbox = None
         self._update_button = None
         self._buy_button = None
         self._sell_button = None
@@ -75,6 +76,12 @@ class PriceChartControls(QWidget):
             self._page_size_combobox.addItems(['100', '50'])
         return self._page_size_combobox
     
+    def calculate_stop_loss_checkbox(self):
+        if not self._calculate_stop_loss_checkbox:
+            self._calculate_stop_loss_checkbox = QCheckBox()
+            self._calculate_stop_loss_checkbox.setChecked(True)
+        return self._calculate_stop_loss_checkbox
+    
     def update_button(self):
         if not self._update_button:
             self._update_button = QPushButton('Update', self)
@@ -106,7 +113,7 @@ class PriceChartControls(QWidget):
     def line_type_combobox(self):
         if not self._line_type_combobox:
             self._line_type_combobox = QComboBox(self)
-            self._line_type_combobox.addItems([None, 'Buy Stop', 'Sell Stop', 'Take Profit'])
+            self._line_type_combobox.addItems([None, 'Buy Stop', 'Sell Stop', 'Stop Loss', 'Take Profit'])
             self._line_type_combobox.currentTextChanged.connect(self.handle_line_type_combobox)
             self._line_type_combobox.setEnabled(False)
         return self._line_type_combobox
@@ -175,6 +182,7 @@ class PriceChartControls(QWidget):
         form_layout.addRow('Risk (%)', self.risk_spinbox())
         form_layout.addRow('Pip', self.pip_combobox())
         form_layout.addRow('Page size', self.page_size_combobox())
+        form_layout.addRow('Calculate stop loss', self.calculate_stop_loss_checkbox())
         trade_buttons_layout = QHBoxLayout()
         trade_buttons_layout.addWidget(self.buy_button())
         trade_buttons_layout.addWidget(self.sell_button())
@@ -230,6 +238,10 @@ class PriceChartControls(QWidget):
         for listener in self._listeners:
             listener.page_size_updated(new_page_size)
 
+    def notify_calculate_stop_loss_changed(self, new_calculate_stop_loss):
+        for listener in self._listeners:
+            listener.calculate_stop_loss_updated(new_calculate_stop_loss)
+
     def notfify_line_type_changed(self, new_line_type):
         for listener in self._listeners:
             listener.line_type_changed(new_line_type)
@@ -283,6 +295,7 @@ class PriceChartControls(QWidget):
         self.notify_risk_updated(float(self.risk_spinbox().value() / 100.0))
         self.notify_pip_updated(float(self.pip_combobox().currentText()))
         self.notify_page_size_updated(int(self.page_size_combobox().currentText()))
+        self.notify_calculate_stop_loss_changed(self.calculate_stop_loss_checkbox().isChecked())
 
     def handle_buy_button(self):
         if self.sell_button().isChecked():

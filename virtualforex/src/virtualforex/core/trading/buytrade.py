@@ -2,7 +2,7 @@ from virtualforex.core.trading.trade import Trade
 
 
 class BuyTrade(Trade):
-    def __init__(self, price, stop_loss, take_profit=None):
+    def __init__(self, price, stop_loss=None, take_profit=None):
         super(BuyTrade, self).__init__()
         self._price = price
         self._stop_loss = stop_loss

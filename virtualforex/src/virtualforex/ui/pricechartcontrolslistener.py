@@ -17,6 +17,9 @@ class PriceChartControlsListener:
     def page_size_updated(self, new_page_size):
         pass
 
+    def calculate_stop_loss_updated(self, new_calculate_stop_loss):
+        pass
+
     def line_type_changed(self, new_line_type):
         pass
 

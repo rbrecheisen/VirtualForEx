@@ -126,6 +126,9 @@ class PriceChart(QWidget, PriceChartControlsListener):
             # self.price_data_window().first_page()
             self.update_chart()
 
+    def calculate_stop_loss_updated(self, new_calculate_stop_loss):
+        self.trader().set_calculate_stop_loss(new_calculate_stop_loss)
+
     def line_type_changed(self, new_line_type):
         self.set_current_line_type(new_line_type)
 
@@ -191,13 +194,20 @@ class PriceChart(QWidget, PriceChartControlsListener):
                     if not self.current_trade():
                         self.add_line(price, 'green', 'Buy Stop')
                         self.set_current_trade(self.trader().buy(price))
-                        self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+                        if self.trader().calculate_stop_loss():
+                            self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
 
                 elif self.current_line_type() == 'Sell Stop':
                     if not self.current_trade():
                         self.add_line(price, 'green', 'Sell Stop')
                         self.set_current_trade(self.trader().sell(price))
-                        self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+                        if self.trader().calculate_stop_loss():
+                            self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+
+                elif self.current_line_type() == 'Stop Loss':
+                    if self.current_trade():
+                        self.add_line(price, 'red', 'Stop Loss')
+                        self.current_trade().set_stop_loss(price)
 
                 elif self.current_line_type() == 'Take Profit':
                     if self.current_trade():
