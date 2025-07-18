@@ -135,15 +135,9 @@ class PriceChart(QWidget, PriceChartControlsListener):
     # TRADING
     
     def buy(self):
-        # if not self.current_trade():
-        #     self.set_current_trade(self.trader().buy(None, None))
-        # else:
         self.set_current_trade(None)
 
     def sell(self):
-        # if not self.current_trade():
-        #     self.set_current_trade(self.trader().sell(None, None))
-        # else:
         self.set_current_trade(None)
 
     # NAVIGATION
@@ -152,33 +146,64 @@ class PriceChart(QWidget, PriceChartControlsListener):
         if self.price_data():
             self.price_data_window().next()
             self.update_chart()
+            if self.current_trade():
+                last_bar = self.price_data_window().last_bar()
+                if self.current_trade().triggered_stop(last_bar):
+                    # QMessageBox.information(self, 'Information', 'Stop triggered!')
+                    print(f'Stop triggered at {self.current_trade().price()}')
+                elif self.current_trade().triggered_stop_loss(last_bar):
+                    # QMessageBox.information(self, 'Information', 'Stop loss triggered!')
+                    print(f'Buy stop triggered at {self.current_trade().stop_loss()}')
+                elif self.current_trade().triggered_take_profit(last_bar):
+                    # QMessageBox.information(self, 'Information', 'Take profit triggered!')
+                    print(f'Buy stop triggered at {self.current_trade().take_profit()}')
+                else:
+                    pass
 
     def next_page(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You can only step forward while trading')
+            return
         if self.price_data():
             self.price_data_window().next_page()
             self.update_chart()
 
     def prev(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You can only step forward while trading')
+            return
         if self.price_data():
             self.price_data_window().prev()
             self.update_chart()
 
     def prev_page(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You can only step forward while trading')
+            return
         if self.price_data():
             self.price_data_window().prev_page()
             self.update_chart()
 
     def first_page(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You can only step forward while trading')
+            return
         if self.price_data():
             self.price_data_window().first_page()
             self.update_chart()
 
     def last_page(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You can only step forward while trading')
+            return
         if self.price_data():
             self.price_data_window().last_page()
             self.update_chart()
 
     def reset(self):
+        if self.current_trade():
+            QMessageBox.warning(self, 'Warning', 'You cannot reset chart while trading')
+            return
         if self.price_data():
             self.price_data_window().reset()
             self.update_chart()
