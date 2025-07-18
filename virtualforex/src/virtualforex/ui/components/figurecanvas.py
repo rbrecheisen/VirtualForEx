@@ -35,6 +35,7 @@ class FigureCanvas(FigureCanvasQTAgg):
             self.lines().pop(idx)
 
     def find_line_between(self, min, max):
+        print(f'find_line_between {min} - {max}')
         for i in range(len(self.lines())):
             price = self.lines()[i]['price']
             if min <= price <= max:

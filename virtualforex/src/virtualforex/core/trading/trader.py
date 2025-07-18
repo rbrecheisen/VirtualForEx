@@ -36,19 +36,29 @@ class Trader:
     
     def set_pip(self, pip):
         self._pip = pip
+
+    # HELPERS
+
+    def calculate_buy_stop_loss(self, price):
+        calculator = BuyStopLossCalculator(self.account_size(), self.lot_size(), self.risk(), self.pip())
+        stop_loss = calculator.calculate(price)
+        return stop_loss
+    
+    def calculate_sell_stop_loss(self, price):
+        calculator = SellStopLossCalculator(self.account_size(), self.lot_size(), self.risk(), self.pip())
+        stop_loss = calculator.calculate(price)
+        return stop_loss
     
     # TRADING
 
-    def buy(self, price, take_profit):
+    def buy(self, price, take_profit=None):
         if not self.account_size() or not self.lot_size() or not self.risk() or not self.pip():
             raise RuntimeError('Trade not yet configured')
-        calculator = BuyStopLossCalculator(self.account_size(), self.lot_size(), self.risk(), self.pip())
-        stop_loss = calculator.calculate(price)
+        stop_loss = self.calculate_buy_stop_loss(price)
         return BuyTrade(price, stop_loss, take_profit)
     
-    def sell(self, price, take_profit):
+    def sell(self, price, take_profit=None):
         if not self.account_size() or not self.lot_size() or not self.risk() or not self.pip():
             raise RuntimeError('Trade not yet configured')
-        calculator = SellStopLossCalculator(self.account_size(), self.lot_size(), self.risk(), self.pip())
-        stop_loss = calculator.calculate(price)
+        stop_loss = self.calculate_sell_stop_loss(price)
         return SellTrade(price, stop_loss, take_profit)

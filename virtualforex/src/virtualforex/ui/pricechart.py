@@ -1,5 +1,3 @@
-import mplfinance as mpf
-
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -7,7 +5,6 @@ from PySide6.QtWidgets import (
 )
 
 from virtualforex.ui.components.figurecanvas import FigureCanvas
-from virtualforex.ui.components.figure import Figure
 from virtualforex.ui.components.navigationtoolbar import NavigationToolbar
 from virtualforex.ui.pricechartcontrolslistener import PriceChartControlsListener
 from virtualforex.core.data.pricedatawindow import PriceDataWindow
@@ -28,6 +25,8 @@ class PriceChart(QWidget, PriceChartControlsListener):
         self._button_pressed = None
         self._delta = None
         self._selected_line = None
+        self._current_line_type = None
+        self._current_trade = None
         self.init_layout()
 
     # GET/SET
@@ -49,8 +48,6 @@ class PriceChart(QWidget, PriceChartControlsListener):
         if not self._canvas:
             self._canvas = FigureCanvas()
             self._canvas.mpl_connect('button_press_event', self.on_click)
-            self._canvas.mpl_connect('button_release_event', self.on_release)
-            self._canvas.mpl_connect('motion_notify_event', self.on_move)
         return self._canvas
     
     def navigation_toolbar(self):
@@ -63,6 +60,12 @@ class PriceChart(QWidget, PriceChartControlsListener):
             self._trader = Trader()
         return self._trader
     
+    def current_trade(self):
+        return self._current_trade
+    
+    def set_current_trade(self, trade):
+        self._current_trade = trade
+    
     def button_pressed(self):
         if not self._button_pressed:
             self._button_pressed = False
@@ -70,6 +73,12 @@ class PriceChart(QWidget, PriceChartControlsListener):
     
     def set_button_pressed(self, button_pressed):
         self._button_pressed = button_pressed
+
+    def current_line_type(self):
+        return self._current_line_type
+    
+    def set_current_line_type(self, current_line_type):
+        self._current_line_type = current_line_type
 
     def delta(self):
         if not self._delta:
@@ -116,43 +125,60 @@ class PriceChart(QWidget, PriceChartControlsListener):
             self.price_data_window().first_page()
             self.update_chart()
 
+    def line_type_changed(self, new_line_type):
+        print(f'line_type_changed: {new_line_type}')
+        self.set_current_line_type(new_line_type)
+
     # TRADING
     
     def buy(self):
-        pass
+        # if not self.current_trade():
+        #     self.set_current_trade(self.trader().buy(None, None))
+        # else:
+        self.set_current_trade(None)
 
     def sell(self):
-        pass
+        # if not self.current_trade():
+        #     self.set_current_trade(self.trader().sell(None, None))
+        # else:
+        self.set_current_trade(None)
 
     # NAVIGATION
 
     def next(self):
-        self.price_data_window().next()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().next()
+            self.update_chart()
 
     def next_page(self):
-        self.price_data_window().next_page()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().next_page()
+            self.update_chart()
 
     def prev(self):
-        self.price_data_window().prev()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().prev()
+            self.update_chart()
 
     def prev_page(self):
-        self.price_data_window().prev_page()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().prev_page()
+            self.update_chart()
 
     def first_page(self):
-        self.price_data_window().first_page()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().first_page()
+            self.update_chart()
 
     def last_page(self):
-        self.price_data_window().last_page()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().last_page()
+            self.update_chart()
 
     def reset(self):
-        self.price_data_window().reset()
-        self.update_chart()
+        if self.price_data():
+            self.price_data_window().reset()
+            self.update_chart()
 
     # MOUSE EVENTS
 
@@ -161,33 +187,28 @@ class PriceChart(QWidget, PriceChartControlsListener):
             self.set_button_pressed(False)
             price = event.ydata
             if event.button == 1:
-                line = self.find_line_between(price-self.delta(), price+self.delta())
-                if not line:
-                    # This is a new line. Depending on the line type, a buy/sell stop should be placed
-                    # or a take profit point. The stop loss is calculated automatically.
-                    self.add_line(price, 'green', 'Buy Stop')
+                if self.current_line_type() == 'Buy Stop':
+                    if not self.current_trade():
+                        self.add_line(price, 'green', 'Buy Stop')
+                        self.set_current_trade(self.trader().buy(price))
+                        self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+
+                elif self.current_line_type() == 'Sell Stop':
+                    if not self.current_trade():
+                        self.add_line(price, 'green', 'Sell Stop')
+                        self.set_current_trade(self.trader().sell(price))
+                        self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+
+                elif self.current_line_type() == 'Take Profit':
+                    if self.current_trade():
+                        self.add_line(price, 'orange', 'Take Profit')
+                        self.current_trade().set_take_profit(price)
+
                 else:
-                    # User selected existing line, so he can move it
-                    self.set_selected_line(line)
-                    self.set_button_pressed(True)
-            elif event.button == 3:
-                line = self.find_line_between(price-self.delta(), price+self.delta())
-                if line:
-                    self.remove_line(line['price'])
+                    QMessageBox.warning(self, 'Warning', 'Select line type before you click')
             else:
                 return
             
-    def on_release(self, event):
-        if self.price_data() and event.inaxes:
-            self.set_selected_line(None)
-            self.set_button_pressed(False)
-
-    def on_move(self, event):
-        if self.price_data() and event.inaxes:
-            if self.button_pressed():
-                self.selected_line()['price'] = event.ydata
-                self.update_chart()
-
     # RENDERING
 
     def find_line_between(self, min, max):

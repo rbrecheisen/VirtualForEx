@@ -38,6 +38,7 @@ class PriceChartControls(QWidget):
         self._reset_button = None
         self._listeners = []
         self.init_layout()
+        self.update_parameters()
 
     # GET/SET
 
@@ -77,7 +78,7 @@ class PriceChartControls(QWidget):
     def update_button(self):
         if not self._update_button:
             self._update_button = QPushButton('Update', self)
-            self._update_button.clicked.connect(self.handle_update_button)
+            self._update_button.clicked.connect(self.update_parameters)
         return self._update_button
     
     def buy_button(self):
@@ -106,6 +107,7 @@ class PriceChartControls(QWidget):
         if not self._line_type_combobox:
             self._line_type_combobox = QComboBox(self)
             self._line_type_combobox.addItems([None, 'Buy Stop', 'Sell Stop', 'Take Profit'])
+            self._line_type_combobox.currentTextChanged.connect(self.handle_line_type_combobox)
             self._line_type_combobox.setEnabled(False)
         return self._line_type_combobox
     
@@ -159,7 +161,7 @@ class PriceChartControls(QWidget):
     
     def reset_button(self):
         if not self._reset_button:
-            self._reset_button = QPushButton('Reset chart', self)
+            self._reset_button = QPushButton('Show full price chart', self)
             self._reset_button.clicked.connect(self.handle_reset_button)
         return self._reset_button
 
@@ -186,7 +188,7 @@ class PriceChartControls(QWidget):
         first_last_buttons_layout.addWidget(self.last_page_button())
         layout = QVBoxLayout()
         layout.addLayout(form_layout)
-        layout.addWidget(self.update_button())
+        # layout.addWidget(self.update_button())
         layout.addWidget(self.clear_lines_button())
         layout.addLayout(trade_buttons_layout)
         layout.addWidget(QLabel('Select line type:'))
@@ -227,6 +229,10 @@ class PriceChartControls(QWidget):
     def notify_page_size_updated(self, new_page_size):
         for listener in self._listeners:
             listener.page_size_updated(new_page_size)
+
+    def notfify_line_type_changed(self, new_line_type):
+        for listener in self._listeners:
+            listener.line_type_changed(new_line_type)
 
     def notify_clear_lines(self):
         for listener in self._listeners:
@@ -270,10 +276,7 @@ class PriceChartControls(QWidget):
 
     # EVENTS
 
-    def handle_update_button(self):
-        if self.buy_button().isChecked() or self.sell_button().isChecked():
-            QMessageBox.warning(self, 'Warning', 'Trade in progress! Close it first before updating parameters.')
-            return
+    def update_parameters(self):
         self.notify_account_size_updated(self.account_size_spinbox().value())
         self.notify_lot_size_updated(int(self.lot_size_combobox().currentText()))
         self.notify_leverage_updated(self.leverage_spinbox().value())
@@ -288,16 +291,27 @@ class PriceChartControls(QWidget):
             return
         self.line_type_combobox().setEnabled(self.buy_button().isChecked())
         if self.buy_button().isChecked():
+            self.update_parameters()
             self.notify_buy()
+        else:
+            self.notify_clear_lines()
+            self.line_type_combobox().setCurrentText(None)
 
     def handle_sell_button(self):
         if self.buy_button().isChecked():
             self.sell_button().setChecked(False)
             QMessageBox.warning(self, 'Warning', 'Buy trade already active! Close it first.')
             return
-        self.line_type_combobox().setEditable(self.sell_button().isChecked())
+        self.line_type_combobox().setEnabled(self.sell_button().isChecked())
         if self.sell_button().isChecked():
+            self.update_parameters()
             self.notify_sell()
+        else:
+            self.notify_clear_lines()
+            self.line_type_combobox().setCurrentText(None)
+
+    def handle_line_type_combobox(self, new_line_type):
+        self.notfify_line_type_changed(new_line_type)
 
     def handle_clear_lines_button(self):
         self.notify_clear_lines()
