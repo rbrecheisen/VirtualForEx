@@ -41,7 +41,8 @@ class PriceChart(QWidget, PriceChartControlsListener):
     def price_data_window(self):
         if not self._price_data_window:
             self._price_data_window = PriceDataWindow(self.price_data())
-            self._price_data_window.first_page()
+            # self._price_data_window.first_page()
+            self._price_data_window.random_page()
         return self._price_data_window
 
     def canvas(self):
@@ -122,11 +123,10 @@ class PriceChart(QWidget, PriceChartControlsListener):
     def page_size_updated(self, new_page_size):
         if self.price_data():
             self.price_data_window().set_page_size(new_page_size)
-            self.price_data_window().first_page()
+            # self.price_data_window().first_page()
             self.update_chart()
 
     def line_type_changed(self, new_line_type):
-        print(f'line_type_changed: {new_line_type}')
         self.set_current_line_type(new_line_type)
 
     # TRADING

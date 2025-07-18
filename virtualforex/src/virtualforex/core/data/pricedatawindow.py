@@ -43,6 +43,14 @@ class PriceDataWindow:
     
     def current_page(self):
         return self.page(self._first_index, self._last_index)
+    
+    def random_page(self):
+        import random
+        nr_pages = len(self.df()) // self.page_size()
+        random_page = random.randint(0, nr_pages - 1)
+        self._first_index = random_page * self.page_size()
+        self._last_index = self._first_index + self.page_size()
+        return self.page(self._first_index, self._last_index)
 
     def first_page(self):
         return self.page(0, self.page_size())
