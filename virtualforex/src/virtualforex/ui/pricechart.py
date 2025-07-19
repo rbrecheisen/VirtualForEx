@@ -136,9 +136,17 @@ class PriceChart(QWidget, PriceChartControlsListener):
     
     def buy(self):
         self.set_current_trade(None)
+        message = 'You are starting a BUY trade.\n'
+        message += 'The trade will become active as soon as you place a buy stop.\n'
+        message += 'In that case, you can only advance the chart one candle at a time.'
+        QMessageBox.information(self, 'Information', message)
 
     def sell(self):
         self.set_current_trade(None)
+        message = 'You are starting a SELL trade.\n'
+        message += 'The trade will become active as soon as you place a sell stop.\n'
+        message += 'In that case, you can only advance the chart one candle at a time.'
+        QMessageBox.information(self, 'Information', message)
 
     # NAVIGATION
 
@@ -153,10 +161,10 @@ class PriceChart(QWidget, PriceChartControlsListener):
                     print(f'Stop triggered at {self.current_trade().price()}')
                 elif self.current_trade().triggered_stop_loss(last_bar):
                     # QMessageBox.information(self, 'Information', 'Stop loss triggered!')
-                    print(f'Buy stop triggered at {self.current_trade().stop_loss()}')
+                    print(f'Stop loss triggered at {self.current_trade().stop_loss()}')
                 elif self.current_trade().triggered_take_profit(last_bar):
                     # QMessageBox.information(self, 'Information', 'Take profit triggered!')
-                    print(f'Buy stop triggered at {self.current_trade().take_profit()}')
+                    print(f'Take profit triggered at {self.current_trade().take_profit()}')
                 else:
                     pass
 
@@ -220,7 +228,7 @@ class PriceChart(QWidget, PriceChartControlsListener):
                         self.add_line(price, 'green', 'Buy Stop')
                         self.set_current_trade(self.trader().buy(price))
                         if self.trader().calculate_stop_loss():
-                            self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')
+                            self.add_line(self.current_trade().stop_loss(), 'red', 'Stop Loss')                        
 
                 elif self.current_line_type() == 'Sell Stop':
                     if not self.current_trade():
