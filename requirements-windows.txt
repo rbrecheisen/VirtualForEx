@@ -7,8 +7,6 @@ pytest
 # Application
 pyside6>=6.9
 rbeesoft>=1.0
-plotly
-dash
 pandas
 mplfinance
 matplotlib
