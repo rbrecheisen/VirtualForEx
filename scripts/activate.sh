@@ -1,2 +1,3 @@
 #!/bin/bash
-${HOME}/.venv/VirtualForEx/bin/activate
+source ${HOME}/.venv/VirtualForEx/bin/activate
+exec bash
